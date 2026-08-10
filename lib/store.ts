@@ -1,4 +1,4 @@
-import { kv } from '@vercel/kv'
+import { Redis } from '@upstash/redis'
 
 const KV_KEY = 'frp_profiles'
 
@@ -13,12 +13,23 @@ export interface Profile {
   status: 'active' | 'inactive'
 }
 
+function getRedis() {
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) {
+    return null
+  }
+  return new Redis({ url, token })
+}
+
 export async function getProfiles(): Promise<Profile[]> {
   try {
-    const profiles = await kv.get<Profile[]>(KV_KEY)
+    const redis = getRedis()
+    if (!redis) return []
+    const profiles = await redis.get<Profile[]>(KV_KEY)
     return profiles || []
   } catch (e) {
-    console.error('KV Error:', e)
+    console.error('Redis Error:', e)
     return []
   }
 }
@@ -30,13 +41,19 @@ export async function saveProfile(profile: Partial<Profile>) {
     id: Math.random().toString(36).substring(2, 9),
     status: 'inactive'
   } as Profile
-  
-  await kv.set(KV_KEY, [...profiles, newProfile])
+
+  const redis = getRedis()
+  if (redis) {
+    await redis.set(KV_KEY, [...profiles, newProfile])
+  }
   return newProfile
 }
 
 export async function deleteProfile(id: string) {
   const profiles = await getProfiles()
   const filtered = profiles.filter(p => p.id !== id)
-  await kv.set(KV_KEY, filtered)
+  const redis = getRedis()
+  if (redis) {
+    await redis.set(KV_KEY, filtered)
+  }
 }

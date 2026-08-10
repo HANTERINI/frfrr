@@ -1,19 +1,14 @@
-import { experimental_upgradeWebSocket } from '@vercel/functions';
+import { NextResponse } from 'next/server'
 
-export const GET = async (req: Request) => {
-  // Этот эндпоинт позволяет frpc подключаться через WebSocket
-  // Для полной реализации требуется библиотека yamux или проксирование на frps
-  
-  return experimental_upgradeWebSocket(ws => {
-    console.log('FRP Client connected via WebSocket');
-    
-    ws.on('message', (data) => {
-      // Здесь должна быть логика проксирования трафика
-      // В данной версии используется как контрольный канал
-    });
-    
-    ws.on('close', () => {
-      console.log('FRP Client disconnected');
-    });
-  });
+// WebSocket-эндпоинт для подключения frpc
+// В данной версии используется как заглушка контрольного канала
+export async function GET() {
+  return NextResponse.json({
+    status: 'ok',
+    message: 'FRP WebSocket endpoint. Use frpc with protocol=websocket to connect.',
+    protocol: 'wss',
+    port: 443
+  })
 }
+
+export const dynamic = 'force-dynamic'

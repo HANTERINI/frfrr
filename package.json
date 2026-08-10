@@ -12,7 +12,7 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "@vercel/kv": "latest",
+    "@upstash/redis": "latest",
     "lucide-react": "latest",
     "clsx": "latest",
     "tailwind-merge": "latest"
